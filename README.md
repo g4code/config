@@ -8,9 +8,14 @@ Config
 > Using Composer and Packagist
 
 in composer.json file add:
-"require": {
-    "g4/config": "*"
+
+```json
+{
+    "require": {
+        "g4/config": "*"
+    }
 }
+```
 
 ## Usage
 
