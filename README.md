@@ -5,6 +5,13 @@ Config
 
 ## Install
 
+> Using Composer and Packagist
+
+in composer.json file add:
+"require": {
+    "g4/config": "*"
+}
+
 ## Usage
 
 ```php
