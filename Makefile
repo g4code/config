@@ -1,4 +1,4 @@
-TITLE = [data-mapper]
+TITLE = [config]
 
 all: install
 

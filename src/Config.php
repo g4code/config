@@ -3,6 +3,7 @@
 namespace G4\Config;
 
 use Zend\Config\Reader\Ini as Reader;
+use G4\Log\Writer;
 
 class Config
 {
@@ -38,7 +39,7 @@ class Config
 
     public function setCachePath($cachePath)
     {
-        $this->cachePath = $cachePath;
+        $this->cachePath = (string) $cachePath;
         return $this;
     }
 
@@ -51,7 +52,13 @@ class Config
         );
 
         // section can be empty, so remove it
-        return md5($this->cachePath . DIRECTORY_SEPARATOR . implode('~', array_filter($segments)));
+        $filename = md5(implode('~', array_filter($segments)));
+
+        if(!is_writable($this->cachePath)) {
+            throw new \Exception('Cache file path is not writable');
+        }
+
+        return $this->cachePath . $filename;
     }
 
     private function getFromCache()
