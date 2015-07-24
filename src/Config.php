@@ -48,7 +48,7 @@ class Config
         $segments = array(
             __NAMESPACE__,
             __CLASS__,
-            $this->path,
+            basename($this->path),
             $this->section,
         );
 
