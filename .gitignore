@@ -10,6 +10,7 @@ demo/*
 .blackhole
 .buildpath
 .project
+.idea
 .export
 *~
 dummy.php
