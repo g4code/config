@@ -48,7 +48,6 @@ class Config
         $segments = array(
             __NAMESPACE__,
             __CLASS__,
-            basename($this->path),
             $this->section,
         );
 
@@ -103,9 +102,9 @@ class Config
         $reader = new Reader();
         $this->data = $reader->fromFile($path);
 
-        if(null !== $this->section) {
-            $this->data = $this->getSection($this->section);
-        }
+        $this->data = null !== $this->section
+            ? $this->getSection($this->section)
+            : $this->mergeSections();
 
         return $this;
     }
@@ -145,7 +144,6 @@ class Config
         $tmp = array_keys($this->data);
 
         foreach($tmp as $item) {
-
             if(substr_count($item, ":") > 1) { }
 
             $segments = explode(':', $item);
@@ -158,6 +156,23 @@ class Config
         }
 
         return $this;
+    }
+
+    private function getSectionName($item)
+    {
+        if(substr_count($item, ":") > 1) { }
+        $segments = explode(':', $item);
+        return $segments[0];
+    }
+
+    private function mergeSections()
+    {
+        $tmpData = [];
+        foreach($this->data as $sectionName => $data){
+            $name = $this->getSectionName($sectionName);
+            $tmpData[$name] = $this->getSection($name);
+        }
+        return $tmpData;
     }
 
     public function getData($force = false)
