@@ -46,6 +46,7 @@ class Config
     private function formatCacheFilename()
     {
         $segments = array(
+            $this->path,
             __NAMESPACE__,
             __CLASS__,
             $this->section,
