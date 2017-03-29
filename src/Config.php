@@ -3,6 +3,7 @@
 namespace G4\Config;
 
 
+//TODO: Drasko - Change usage in new version!
 class Config
 {
     private $cachingEnabled = false;
@@ -14,6 +15,26 @@ class Config
     private $path;
 
     private $section;
+
+    private $useAggregator = false;
+
+
+    public function getData($force = false)
+    {
+        if($force !== true && $this->cachingEnabled) {
+            $this->data = $this->getFromCache();
+        }
+
+        if(null === $this->data) {
+            $this->process();
+
+            if($this->cachingEnabled) {
+                $this->setToCache();
+            }
+        }
+
+        return $this->data;
+    }
 
     public function setPath($path)
     {
@@ -36,6 +57,12 @@ class Config
     public function setCachePath($cachePath)
     {
         $this->cachePath = (string) $cachePath;
+        return $this;
+    }
+
+    public function useAggregator()
+    {
+        $this->useAggregator = true;
         return $this;
     }
 
@@ -90,25 +117,8 @@ class Config
 
     private function process()
     {
-        $this->data = (new Processor($this->path, $this->section))->process();
+        $this->data = (new Processor($this->path, $this->section, $this->useAggregator))->process();
 
         return $this;
-    }
-
-    public function getData($force = false)
-    {
-        if($force !== true && $this->cachingEnabled) {
-            $this->data = $this->getFromCache();
-        }
-
-        if(null === $this->data) {
-            $this->process();
-
-            if($this->cachingEnabled) {
-                $this->setToCache();
-            }
-        }
-
-        return $this->data;
     }
 }

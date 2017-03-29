@@ -3,6 +3,8 @@
 namespace G4\Config;
 
 use Zend\Config\Reader\Ini as Reader;
+use Zend\ConfigAggregator\ConfigAggregator;
+use Zend\ConfigAggregator\ZendConfigProvider;
 
 class Processor
 {
@@ -27,27 +29,25 @@ class Processor
      */
     private $sections;
 
+    private $useAggregator;
+
     /**
      * Processor constructor.
      * @param $path
      * @param $section
      */
-    public function __construct($path, $section)
+    public function __construct($path, $section, $useAggregator)
     {
-        $this->path     = $path;
-        $this->section  = $section;
+        $this->path             = $path;
+        $this->section          = $section;
+        $this->useAggregator    = $useAggregator;
     }
 
     public function process()
     {
-        $path = realpath($this->path);
-
-        if(false === $path || !is_readable($path)) {
-            throw new \Exception('Configuration file is not readable');
-        }
-
-        $reader = new Reader();
-        $this->data = $reader->fromFile($path);
+        $this->useAggregator
+            ? $this->readAggregation()
+            : $this->readFromFile();
 
         $this->data = null !== $this->section
             ? $this->getSection($this->section)
@@ -120,5 +120,27 @@ class Processor
         }
 
         return $this;
+    }
+
+    private function readAggregation()
+    {
+        $aggregator = new ConfigAggregator(
+            [
+                new ZendConfigProvider($this->path),
+            ]
+        );
+        $this->data = $aggregator->getMergedConfig();
+    }
+
+    private function readFromFile()
+    {
+        $path = realpath($this->path);
+
+        if(false === $path || !is_readable($path)) {
+            throw new \Exception('Configuration file is not readable');
+        }
+
+        $reader = new Reader();
+        $this->data = $reader->fromFile($path);
     }
 }
