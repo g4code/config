@@ -29,7 +29,7 @@
     },
     "require": {
         "php": ">=5.3.3",
-        "zendframework/zend-config": "3.*",
+        "zendframework/zend-config": "*",
         "zendframework/zend-config-aggregator": "0.2.*"
     }
 }
