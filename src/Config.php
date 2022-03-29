@@ -104,7 +104,13 @@ class Config
     {
         $realCachePath = $this->formatCacheFilename();
 
-        $toSave = "<?php return \n" . var_export($this->data, true) . ';';
+        $toSave = "<?php 
+/**
+Config filename: " . $this->path . "
+Environment: " . $this->section . "
+Date created: " . date("Y-m-d H:i:s") . "
+*/
+return \n" . var_export($this->data, true) . ';';
 
         if(!touch($realCachePath)) {
             throw new \Exception('Cache file path is not writable');
