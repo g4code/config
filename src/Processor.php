@@ -8,7 +8,7 @@ use Zend\ConfigAggregator\ZendConfigProvider;
 
 class Processor
 {
-
+    const VAULT_KEYWORD = 'vault';
     /**
      * @var array
      */
@@ -52,6 +52,14 @@ class Processor
         $this->data = null !== $this->section
             ? $this->getSection($this->section)
             : $this->mergeSections();
+
+        $this->getVaultVariables();
+
+        if (empty($this->vaultVariables)) {
+            return $this->data;
+        }
+
+        $this->replaceVaultVariablesWithData($this->data, $this->getValuesFromVault());
 
         return $this->data;
     }
@@ -142,5 +150,69 @@ class Processor
 
         $reader = new Reader();
         $this->data = $reader->fromFile($path);
+    }
+
+    private function getVaultVariables()
+    {
+        $this->vaultVariables = $this->filterMultiArray($this->data);
+    }
+
+    public function filterMultiArray(array $data)
+    {
+        $filteredArray = [];
+        foreach ($data as $value) {
+            if (is_array($value)) {
+                $filteredSubArray = $this->filterMultiArray($value);
+                $filteredArray = array_merge($filteredArray, $filteredSubArray);
+            } elseif (str_contains($value, self::VAULT_KEYWORD)) {
+                $filteredArray[] = $value;
+            }
+        }
+
+        return $filteredArray;
+    }
+
+    private function sortVariablesByRouteAndKey()
+    {
+        //todo maybe remove strtolower when variables are stored in apper case in vault.
+        $sorted = [];
+        foreach ($this->vaultVariables as $vaultVariable) {
+            $array = explode('/', strtolower($vaultVariable));
+            $secretKey = array_pop($array);
+            array_shift($array);
+            $secretRoute = implode('/', $array);
+            $sorted[$secretRoute][] = $secretKey;
+        }
+
+        return $sorted;
+    }
+
+    private function getValuesFromVault()
+    {
+        $sorted = $this->sortVariablesByRouteAndKey();
+
+        $data = [];
+        $repo = new VaultRepository($this->data[self::VAULT_KEYWORD]);
+        foreach ($sorted as $section => $secretKeys) {
+            $valuesForSection = $repo->getValueBySection($section);
+            foreach ($secretKeys as $secretKey) {
+                $data[self::VAULT_KEYWORD . '/' . $section . '/' . $secretKey] = $valuesForSection[$secretKey] ?? '';
+            }
+        }
+
+        return $data;
+    }
+
+    public function replaceVaultVariablesWithData(&$array, $searchArray)
+    {
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $this->replaceVaultVariablesWithData($value, $searchArray);
+            } else {
+                if (array_key_exists($value, $searchArray)) {
+                    $value = $searchArray[$value];
+                }
+            }
+        }
     }
 }
