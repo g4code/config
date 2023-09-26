@@ -246,6 +246,6 @@ class Processor
 
         $this->vaultRepository =  new VaultRepository(
             $this->data[self::VAULT_KEYWORD][self::VAULT_URL_KEYWORD],
-            $this->data[self::VAULT_KEYWORD][self::VAULT_URL_KEYWORD]);
+            $this->data[self::VAULT_KEYWORD][self::VAULT_API_TOKEN_KEYWORD]);
     }
 }

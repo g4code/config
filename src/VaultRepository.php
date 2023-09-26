@@ -26,7 +26,7 @@ class VaultRepository
     public function getValueBySection($section)
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->vaultUrl . 'v1/' . $section);
+        curl_setopt($ch, CURLOPT_URL, $this->vaultUrl . '/v1/' . $section);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "X-Vault-Token: " . $this->vaultApiToken,
