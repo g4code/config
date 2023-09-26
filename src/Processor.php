@@ -9,6 +9,9 @@ use Zend\ConfigAggregator\ZendConfigProvider;
 class Processor
 {
     const VAULT_KEYWORD = 'vault';
+    const VAULT_URL_KEYWORD = 'url';
+    const VAULT_API_TOKEN_KEYWORD = 'token';
+
     /**
      * @var array
      */
@@ -32,15 +35,26 @@ class Processor
     private $useAggregator;
 
     /**
+     * @var VaultRepository
+     */
+    private $vaultRepository;
+    /**
+     * @var array
+     */
+    private $vaultVariables;
+
+
+    /**
      * Processor constructor.
      * @param $path
      * @param $section
+     * @param $useAggregator
      */
     public function __construct($path, $section, $useAggregator)
     {
-        $this->path             = $path;
-        $this->section          = $section;
-        $this->useAggregator    = $useAggregator;
+        $this->path = $path;
+        $this->section = $section;
+        $this->useAggregator = $useAggregator;
     }
 
     public function process()
@@ -59,6 +73,8 @@ class Processor
             return $this->data;
         }
 
+        $this->setVaultRepo();
+
         $this->replaceVaultVariablesWithData($this->data, $this->getValuesFromVault());
 
         return $this->data;
@@ -68,14 +84,14 @@ class Processor
     {
         $this->processSections();
 
-        if(!array_key_exists($name, $this->sections)) {
+        if (!array_key_exists($name, $this->sections)) {
             throw new \Exception("Section '{$name}' missing");
         }
 
         $extends = false;
         $parentData = array();
 
-        if($this->sections[$name] !== null) {
+        if ($this->sections[$name] !== null) {
             $extends = true;
             $func = __FUNCTION__;
             $parentData = $this->$func($this->sections[$name]);
@@ -104,7 +120,7 @@ class Processor
     private function mergeSections()
     {
         $tmpData = [];
-        foreach($this->data as $sectionName => $data){
+        foreach ($this->data as $sectionName => $data) {
             $name = $this->getSectionName($sectionName);
             $tmpData[$name] = $this->getSection($name);
         }
@@ -115,8 +131,9 @@ class Processor
     {
         $tmp = array_keys($this->data);
 
-        foreach($tmp as $item) {
-            if(substr_count($item, ":") > 1) { }
+        foreach ($tmp as $item) {
+            if (substr_count($item, ":") > 1) {
+            }
 
             $segments = explode(':', $item);
 
@@ -144,7 +161,7 @@ class Processor
     {
         $path = realpath($this->path);
 
-        if(false === $path || !is_readable($path)) {
+        if (false === $path || !is_readable($path)) {
             throw new \Exception('Configuration file is not readable');
         }
 
@@ -164,7 +181,7 @@ class Processor
             if (is_array($value)) {
                 $filteredSubArray = $this->filterMultiArray($value);
                 $filteredArray = array_merge($filteredArray, $filteredSubArray);
-            } elseif (str_contains($value, self::VAULT_KEYWORD)) {
+            } elseif (substr($value, 0, 5) === self::VAULT_KEYWORD) {
                 $filteredArray[] = $value;
             }
         }
@@ -192,9 +209,9 @@ class Processor
         $sorted = $this->sortVariablesByRouteAndKey();
 
         $data = [];
-        $repo = new VaultRepository($this->data[self::VAULT_KEYWORD]);
+
         foreach ($sorted as $section => $secretKeys) {
-            $valuesForSection = $repo->getValueBySection($section);
+            $valuesForSection = $this->vaultRepository->getValueBySection($section);
             foreach ($secretKeys as $secretKey) {
                 $data[self::VAULT_KEYWORD . '/' . $section . '/' . $secretKey] = $valuesForSection[$secretKey] ?? '';
             }
@@ -214,5 +231,21 @@ class Processor
                 }
             }
         }
+    }
+
+    private function setVaultRepo()
+    {
+        $message = 'No config found for Vault ';
+
+        if(!isset($this->data[self::VAULT_KEYWORD][self::VAULT_URL_KEYWORD])){
+            throw new \RuntimeException(sprintf($message . '%s.', self::VAULT_URL_KEYWORD));
+        }
+        if(!isset($this->data[self::VAULT_KEYWORD][self::VAULT_API_TOKEN_KEYWORD])){
+            throw new \RuntimeException(sprintf($message . '%s.', self::VAULT_API_TOKEN_KEYWORD));
+        }
+
+        $this->vaultRepository =  new VaultRepository(
+            $this->data[self::VAULT_KEYWORD][self::VAULT_URL_KEYWORD],
+            $this->data[self::VAULT_KEYWORD][self::VAULT_URL_KEYWORD]);
     }
 }

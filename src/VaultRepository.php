@@ -13,10 +13,14 @@ class VaultRepository
      */
     private $vaultApiToken;
 
-    public function __construct(array $data)
+    /**
+     * @param string $vaultUrl
+     * @param string $vaultApiToken
+     */
+    public function __construct(string $vaultUrl, string $vaultApiToken)
     {
-        $this->vaultUrl = $data['url'];
-        $this->vaultApiToken = $data['token'];
+        $this->vaultUrl = $vaultUrl;
+        $this->vaultApiToken = $vaultApiToken;
     }
 
     public function getValueBySection($section)
