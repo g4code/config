@@ -181,7 +181,7 @@ class Processor
             if (is_array($value)) {
                 $filteredSubArray = $this->filterMultiArray($value);
                 $filteredArray = array_merge($filteredArray, $filteredSubArray);
-            } elseif (substr($value, 0, 5) === self::VAULT_KEYWORD) {
+            } elseif (substr($value, 0, strlen(self::VAULT_KEYWORD)) === self::VAULT_KEYWORD) {
                 $filteredArray[] = $value;
             }
         }
@@ -235,13 +235,13 @@ class Processor
 
     private function setVaultRepo()
     {
-        $message = 'No config found for Vault ';
+        $message = 'No config found for Vault %s ';
 
         if(!isset($this->data[self::VAULT_KEYWORD][self::VAULT_URL_KEYWORD])){
-            throw new \RuntimeException(sprintf($message . '%s.', self::VAULT_URL_KEYWORD));
+            throw new \RuntimeException(sprintf($message, self::VAULT_URL_KEYWORD));
         }
         if(!isset($this->data[self::VAULT_KEYWORD][self::VAULT_API_TOKEN_KEYWORD])){
-            throw new \RuntimeException(sprintf($message . '%s.', self::VAULT_API_TOKEN_KEYWORD));
+            throw new \RuntimeException(sprintf($message, self::VAULT_API_TOKEN_KEYWORD));
         }
 
         $this->vaultRepository =  new VaultRepository(
