@@ -22,14 +22,14 @@
         }
     ],
     "autoload": {
-        "psr-4": {"G4\\Config\\": "src/"}
+        "psr-4": {
+            "G4\\Config\\": "src/"
+        }
     },
-    "require-dev": {
-
-    },
+    "require-dev": {},
     "require": {
         "php": ">=5.3.3",
-        "zendframework/zend-config": "*",
-        "zendframework/zend-config-aggregator": "0.2.*"
+        "laminas/laminas-config": "*",
+        "laminas/laminas-config-aggregator": "0.2.*"
     }
 }
