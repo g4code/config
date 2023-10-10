@@ -2,9 +2,9 @@
 
 namespace G4\Config;
 
-use Zend\Config\Reader\Ini as Reader;
-use Zend\ConfigAggregator\ConfigAggregator;
-use Zend\ConfigAggregator\ZendConfigProvider;
+use Laminas\Config\Reader\Ini as Reader;
+use Laminas\ConfigAggregator\ConfigAggregator;
+use Laminas\ConfigAggregator\LaminasConfigProvider;
 
 class Processor
 {
@@ -151,7 +151,7 @@ class Processor
     {
         $aggregator = new ConfigAggregator(
             [
-                new ZendConfigProvider($this->path),
+                new LaminasConfigProvider($this->path),
             ]
         );
         $this->data = $aggregator->getMergedConfig();
