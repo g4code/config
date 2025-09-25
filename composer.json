@@ -28,8 +28,8 @@
     },
     "require-dev": {},
     "require": {
-        "php": ">=8.1",
-        "laminas/laminas-config": "3.9.*",
-        "laminas/laminas-config-aggregator": "1.14.*"
+        "php": ">=8.3",
+        "laminas/laminas-config": "*",
+        "laminas/laminas-config-aggregator": "*"
     }
 }
